@@ -1,5 +1,8 @@
 # run 'pip install pytest' to install pytest
+from unittest.mock import patch, Mock, MagicMock
+
 import pytest
+import requests
 
 from twitter import Twitter
 
@@ -26,16 +29,14 @@ def fixture_twitter(backend, username, request, monkeypatch):
     elif request.param == 'backend':
         twitter = Twitter(backend=backend, username=username)
 
-    def monkey_return():
-        return 'test'
-    monkeypatch.setattr(twitter, 'get_user_avatar', monkey_return) #function returning avatars mocked
     return twitter
 
 def test_twitter_initialization(twitter):
     assert twitter
 
-
-def test_tweet_single_message(twitter):
+@patch.object(requests, 'get', return_value=ResponseGetMock()) #mock is used as first arg of test function
+def test_tweet_single_message(avatar_mock, twitter):
+   # with patch('twitter.Twitter.get_user_avatar', return_value='test') #mocking using with statement
     twitter.tweet('Test message')
     assert twitter.tweet_messages == ['Test message']
 
@@ -65,8 +66,23 @@ def test_initialize_two_twitter_classes(backend):
     twitter1.tweet('Test 2')
     assert twitter2.tweet_messages == ['Test 1', 'Test 2']
 
-def test_tweet_with_username(twitter):
+@patch.object(requests, 'get', return_value=ResponseGetMock())
+def test_tweet_with_username(avatar_mock, twitter):
     if not twitter.username:
         pytest.skip()
     twitter.tweet('Test message')
-    assert twitter.tweets == [{'message': 'Test message', 'avatar': 'test'}]
+    assert twitter.tweets == [{'message': 'Test message', 'avatar': 'test', 'hashtags': []}]
+    avatar_mock.assert_called()
+
+    @patch.object(requests, 'get', return_value=ResponseGetMock())
+    def test_tweet_with_hashtag_mock(avatar_mock, twitter):
+        twitter.find_hashtags = Mock()
+        twitter.find_hashtags.return_value = 'first'
+        twitter.tweet('Test #second')
+        assert twitter.tweets[0]['hashtags'] == ['first']
+        twitter.find_hashtags.assert_called_with('Test #second')
+
+def test_twitter_version(twitter):
+    twitter.version = MagicMock()
+    twitter.version.__eq__.return_value = '2.0'
+    assert twitter.version == '2.0'
