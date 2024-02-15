@@ -28,22 +28,19 @@ class Twitter(object):
     def tweet_messages(self):
         return [tweet['message'] for tweet in self.tweets]
 
+    @property
     def get_user_avatar(self):
         if not self.username:
             return None
         url = urljoin(USERS_API, self.username)
         return requests.get(url).json()['avatar_url']
 
-    def delete(self):
-        if self.backend:
-            os.remove(self.backend)
-
     def tweet(self, message):
         if len(message) > 160:
             raise Exception("Message too long.")
         self.tweets.append({
             'message': message,
-            'avatar': self.get_user_avatar(),
+            'avatar': self.get_user_avatar,
             'hashtags': self.find_hashtags(message)
         })
         if self.backend:
@@ -52,9 +49,10 @@ class Twitter(object):
     def find_hashtags(self, message):
         return [m.lower() for m in re.findall("#(\w+)", message)]
 
-
-if __name__ == '__main__':
-    twitter = Twitter()
-    print(twitter.version, twitter.tweets)
-    twitter.tweet('This is a test message')
-    print(twitter.tweets)
+    def get_all_hashtags(self):
+        hashtags = []
+        for message in self.tweets:
+            hashtags.extend(message['hashtags'])
+        if hashtags:
+            return set(hashtags)
+        return "No hashtags found"

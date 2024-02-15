@@ -13,7 +13,7 @@ class TwitterTest(unittest.TestCase):
         # When
         self.twitter.tweet('Test message')
         # Then
-        self.assertEqual(self.twitter.tweets, ['Test message'])
+        self.assertEqual(self.twitter.tweet_messages, ['Test message'])
 
 
 #good practice - function calls on file level (won't be trigerred by imports)
