@@ -33,6 +33,7 @@ class Twitter(object):
         if not self.username:
             return None
         url = urljoin(USERS_API, self.username)
+        #import pdb; pdb.set_trace()
         return requests.get(url).json()['avatar_url']
 
     def tweet(self, message):
@@ -47,7 +48,7 @@ class Twitter(object):
             self.backend.write(json.dumps(self.tweets))
 
     def find_hashtags(self, message):
-        return [m.lower() for m in re.findall("#(\w+)", message)]
+        return [m.lower() for m in re.findall("#(\\w+)", message)]
 
     def get_all_hashtags(self):
         hashtags = []
