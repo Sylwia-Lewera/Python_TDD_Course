@@ -7,7 +7,8 @@ import pytest
 def test_sum():
     assert 2 + 2 == 4
 
-@pytest.mark.xfail #test ending with error/failing
+
+@pytest.mark.xfail  # test ending with error/failing
 def test_get_element_from_list():
     custom_list = ['test']
     assert custom_list[0] == 'fail'
